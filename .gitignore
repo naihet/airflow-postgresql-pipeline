@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+
+venv/
+
+.env
+
+logs/
+
+airflow/logs/
+
+airflow/plugins/__pycache__/
+
+postgres_data/
+
+.vscode/
