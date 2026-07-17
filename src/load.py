@@ -14,6 +14,6 @@ def load_data(input_path):
     df.to_sql(
         "sales",
         engine,
-        if_exists="replace",
+        if_exists="append",
         index=False
     )
