@@ -1,8 +1,13 @@
-def validate_data(df):
+import pandas as pd
+
+
+def validate_data(input_path):
+
+    df = pd.read_parquet(input_path)
 
     return {
         "rows": len(df),
         "columns": len(df.columns),
-        "duplicates": df.duplicated().sum(),
+        "duplicates": int(df.duplicated().sum()),
         "missing": df.isnull().sum().to_dict()
     }

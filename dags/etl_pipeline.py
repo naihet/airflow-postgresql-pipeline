@@ -14,40 +14,34 @@ from validate import validate_data
 def extract():
 
     df = extract_data(
-        "/opt/airflow/data/Sample - Superstore.csv"
+        "/opt/airflow/data/Sample - Superstore.csv",
+        "/opt/airflow/temp/raw.parquet"
     )
 
-    print(df.head())
+    print("Extract completed")
 
 def transform():
 
-    df = extract_data(
-        "/opt/airflow/data/Sample - Superstore.csv"
+    transform_data(
+    "/opt/airflow/temp/raw.parquet",
+    "/opt/airflow/temp/clean.parquet"
     )
 
-    df = transform_data(df)
-
-    print(df.head())
+    print("Transform completed")
 
 def load():
 
-    df = extract_data(
-        "/opt/airflow/data/Sample - Superstore.csv"
+    load_data(
+    "/opt/airflow/temp/clean.parquet"
     )
-
-    df = transform_data(df)
-
-    load_data(df)
+    
+    print("Load completed")
 
 def validate():
 
-    df = extract_data(
-        "/opt/airflow/data/Sample - Superstore.csv"
+    report = validate_data(
+    "/opt/airflow/temp/clean.parquet"
     )
-
-    df = transform_data(df)
-
-    report = validate_data(df)
 
     print(report)
 
