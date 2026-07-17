@@ -27,6 +27,10 @@ def load_data(input_path):
                 SELECT *
                 FROM sales_staging
                 ON CONFLICT (row_id)
-                DO NOTHING;
+                DO UPDATE SET
+                sales = EXCLUDED.sales,
+                quantity = EXCLUDED.quantity,
+                discount = EXCLUDED.discount,
+                profit = EXCLUDED.profit;
             """)
         )
