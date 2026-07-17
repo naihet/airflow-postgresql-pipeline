@@ -1,16 +1,24 @@
+# Python
 __pycache__/
 *.pyc
 
+# Virtual Environment
 venv/
 
-.env
-
+# Logs
 logs/
 
+# Airflow Logs
 airflow/logs/
 
-airflow/plugins/__pycache__/
+# Temporary ETL Files
+temp/
 
-postgres_data/
+# macOS
+.DS_Store
 
+# VSCode
 .vscode/
+
+# Environment Variables
+.env
