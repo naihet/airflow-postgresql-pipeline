@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 import sys
@@ -11,36 +10,70 @@ from transform import transform_data
 from load import load_data
 from validate import validate_data
 
-def extract():
+def extract(ti):
 
-    df = extract_data(
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    raw_path = f"/opt/airflow/temp/raw_{timestamp}.parquet"
+
+    extract_data(
         "/opt/airflow/data/Sample - Superstore.csv",
-        "/opt/airflow/temp/raw.parquet"
+        raw_path
+    )
+
+    ti.xcom_push(
+        key="raw_path",
+        value=raw_path
     )
 
     print("Extract completed")
 
-def transform():
+def transform(ti):
+
+    raw_path = ti.xcom_pull(
+        task_ids="extract",
+        key="raw_path"
+    )
+
+    clean_path = raw_path.replace(
+        "raw",
+        "clean"
+    )
 
     transform_data(
-    "/opt/airflow/temp/raw.parquet",
-    "/opt/airflow/temp/clean.parquet"
+        raw_path,
+        clean_path
+    )
+
+    ti.xcom_push(
+        key="clean_path",
+        value=clean_path
     )
 
     print("Transform completed")
 
-def load():
+def load(ti):
+
+    clean_path = ti.xcom_pull(
+        task_ids="transform",
+        key="clean_path"
+    )
 
     load_data(
-    "/opt/airflow/temp/clean.parquet"
+        clean_path
     )
-    
+
     print("Load completed")
 
-def validate():
+def validate(ti):
+
+    clean_path = ti.xcom_pull(
+        task_ids="transform",
+        key="clean_path"
+    )
 
     report = validate_data(
-    "/opt/airflow/temp/clean.parquet"
+        clean_path
     )
 
     print(report)
