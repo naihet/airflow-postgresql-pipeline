@@ -5,50 +5,46 @@ def quality_check(input_path):
 
     df = pd.read_parquet(input_path)
 
-    # -------------------------
-    # Missing Values
-    # -------------------------
+    report = {
+        "rows": len(df),
+        "columns": len(df.columns),
+        "missing": int(df.isnull().sum().sum()),
+        "duplicates": int(df.duplicated().sum()),
+        "negative_sales": int((df["sales"] < 0).sum()),
+        "invalid_quantity": int((df["quantity"] <= 0).sum())
+    }
 
-    missing = df.isnull().sum().sum()
+    print("\n========== DATA QUALITY REPORT ==========")
 
-    if missing > 0:
+    for key, value in report.items():
+        print(f"{key:20}: {value}")
+
+    print("=========================================\n")
+
+    # -----------------------------
+    # Validation
+    # -----------------------------
+
+    if report["missing"] > 0:
         raise ValueError(
-            f"Data Quality Failed: {missing} missing values found."
+            f"Missing values found ({report['missing']})"
         )
 
-    # -------------------------
-    # Duplicate Rows
-    # -------------------------
-
-    duplicates = df.duplicated().sum()
-
-    if duplicates > 0:
+    if report["duplicates"] > 0:
         raise ValueError(
-            f"Data Quality Failed: {duplicates} duplicate rows found."
+            f"Duplicate rows found ({report['duplicates']})"
         )
 
-    # -------------------------
-    # Negative Sales
-    # -------------------------
-
-    negative_sales = (df["sales"] < 0).sum()
-
-    if negative_sales > 0:
+    if report["negative_sales"] > 0:
         raise ValueError(
-            f"Data Quality Failed: {negative_sales} negative sales found."
+            f"Negative sales found ({report['negative_sales']})"
         )
 
-    # -------------------------
-    # Quantity <= 0
-    # -------------------------
-
-    invalid_quantity = (df["quantity"] <= 0).sum()
-
-    if invalid_quantity > 0:
+    if report["invalid_quantity"] > 0:
         raise ValueError(
-            f"Data Quality Failed: {invalid_quantity} invalid quantity found."
+            f"Invalid quantity found ({report['invalid_quantity']})"
         )
 
     print("Data Quality Passed")
 
-    return True
+    return report

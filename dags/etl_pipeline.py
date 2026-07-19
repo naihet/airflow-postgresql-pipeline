@@ -60,9 +60,11 @@ def quality(ti):
         key="clean_path"
     )
 
-    quality_check(clean_path)
+    report = quality_check(clean_path)
 
-    print("Quality Check completed")
+    print(report)
+
+    print("Quality completed")
 
 def load(ti):
 
