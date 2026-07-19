@@ -1,4 +1,10 @@
 import pandas as pd
+from sqlalchemy import create_engine
+from datetime import datetime
+
+engine = create_engine(
+    "postgresql://postgres:postgres@postgres-etl:5432/salesdb"
+)
 
 
 def quality_check(input_path):
@@ -6,6 +12,7 @@ def quality_check(input_path):
     df = pd.read_parquet(input_path)
 
     report = {
+        "run_time": datetime.now(),
         "rows": len(df),
         "columns": len(df.columns),
         "missing": int(df.isnull().sum().sum()),
@@ -13,6 +20,26 @@ def quality_check(input_path):
         "negative_sales": int((df["sales"] < 0).sum()),
         "invalid_quantity": int((df["quantity"] <= 0).sum())
     }
+
+    # -----------------------------
+    # Determine Status
+    # -----------------------------
+
+    status = "PASS"
+
+    if (
+        report["missing"] > 0
+        or report["duplicates"] > 0
+        or report["negative_sales"] > 0
+        or report["invalid_quantity"] > 0
+    ):
+        status = "FAIL"
+
+    report["status"] = status
+
+    # -----------------------------
+    # Print Report
+    # -----------------------------
 
     print("\n========== DATA QUALITY REPORT ==========")
 
@@ -22,28 +49,24 @@ def quality_check(input_path):
     print("=========================================\n")
 
     # -----------------------------
-    # Validation
+    # Save Report
     # -----------------------------
 
-    if report["missing"] > 0:
-        raise ValueError(
-            f"Missing values found ({report['missing']})"
-        )
+    report_df = pd.DataFrame([report])
 
-    if report["duplicates"] > 0:
-        raise ValueError(
-            f"Duplicate rows found ({report['duplicates']})"
-        )
+    report_df.to_sql(
+        "quality_report",
+        engine,
+        if_exists="append",
+        index=False
+    )
 
-    if report["negative_sales"] > 0:
-        raise ValueError(
-            f"Negative sales found ({report['negative_sales']})"
-        )
+    # -----------------------------
+    # Raise Exception if Failed
+    # -----------------------------
 
-    if report["invalid_quantity"] > 0:
-        raise ValueError(
-            f"Invalid quantity found ({report['invalid_quantity']})"
-        )
+    if status == "FAIL":
+        raise ValueError("Data Quality Failed")
 
     print("Data Quality Passed")
 
