@@ -9,6 +9,7 @@ from extract import extract_data
 from transform import transform_data
 from load import load_data
 from validate import validate_data
+from quality import quality_check
 
 def extract(ti):
 
@@ -51,6 +52,17 @@ def transform(ti):
     )
 
     print("Transform completed")
+
+def quality(ti):
+
+    clean_path = ti.xcom_pull(
+        task_ids="transform",
+        key="clean_path"
+    )
+
+    quality_check(clean_path)
+
+    print("Quality Check completed")
 
 def load(ti):
 
@@ -96,6 +108,11 @@ with DAG(
         python_callable=transform
     )
 
+    quality_task = PythonOperator(
+    task_id="quality",
+    python_callable=quality
+    )
+
     load_task = PythonOperator(
         task_id="load",
         python_callable=load
@@ -106,4 +123,4 @@ with DAG(
         python_callable=validate
     )
 
-    extract_task >> transform_task >> load_task >> validate_task
+    extract_task >> transform_task >> quality_task >> load_task >> validate_task

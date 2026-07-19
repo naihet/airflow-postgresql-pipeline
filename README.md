@@ -30,6 +30,9 @@ Transform
 clean.parquet
  │
  ▼
+Data Quality
+ │
+ ▼
 PostgreSQL Staging
  │
  ▼
@@ -48,6 +51,7 @@ Validation
 - Extract sales data from CSV
 - Transform data using Pandas
 - Store intermediate datasets as Parquet
+- Perform Data Quality checks
 - Load data into PostgreSQL
 - Use a staging table before loading into the production table
 - Incremental loading with PostgreSQL `ON CONFLICT`
@@ -113,7 +117,7 @@ Validate
 - Staging Table Design
 - Incremental ETL
 - PostgreSQL `ON CONFLICT`
-- Data Validation
+- Data Quality Validation
 - Docker Compose Multi-Container Architecture
 - Workflow Orchestration
 
