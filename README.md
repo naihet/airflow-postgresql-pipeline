@@ -11,39 +11,52 @@ A Data Engineering project demonstrating a production-style ETL pipeline orchest
 - Apache Airflow
 - Docker
 - Docker Compose
+- Pytest
+- Discord Webhook
 
 ## Project Architecture
 
 ```text
-CSV
- │
- ▼
-Extract
- │
- ▼
-raw.parquet
- │
- ▼
-Transform
- │
- ▼
-clean.parquet
- │
- ▼
-Data Quality
- │
- ▼
-PostgreSQL Staging
- │
- ▼
-Incremental Load
-(ON CONFLICT)
- │
- ▼
-PostgreSQL
- │
- ▼
-Validation
+ +----------------+
+                    |  CSV Dataset   |
+                    +----------------+
+                             │
+                             ▼
+                      Extract (CSV)
+                             │
+                             ▼
+                      raw.parquet
+                             │
+                             ▼
+                     Transform Data
+                             │
+                             ▼
+                     clean.parquet
+                             │
+                             ▼
+                    Data Quality Check
+                             │
+                     PASS / FAIL
+                             │
+             ┌───────────────┴───────────────┐
+             │                               │
+             ▼                               ▼
+      Discord Alert                    Stop Pipeline
+             │
+             ▼
+       PostgreSQL Staging
+             │
+             ▼
+ Incremental Load (ON CONFLICT)
+             │
+             ▼
+        PostgreSQL Sales DB
+             │
+             ▼
+        Validation Report
+             │
+             ▼
+      Discord Success Alert
 ```
 
 ## Features
@@ -51,15 +64,16 @@ Validation
 - Extract sales data from CSV
 - Transform data using Pandas
 - Store intermediate datasets as Parquet
-- Perform Data Quality checks
-- Load data into PostgreSQL
-- Use a staging table before loading into the production table
-- Incremental loading with PostgreSQL `ON CONFLICT`
-- Prevent duplicate records using Primary Key
-- Validate dataset quality
 - Dynamic file paths using Airflow XCom
-- Schedule ETL workflow using Apache Airflow
-- Containerized development environment with Docker Compose
+- Data Quality validation
+- Production-style logging
+- Incremental loading using PostgreSQL ON CONFLICT
+- Staging table architecture
+- Prevent duplicate records using Primary Key
+- Discord notifications for pipeline success and failure
+- Unit testing with Pytest
+- Apache Airflow DAG orchestration
+- Containerized development environment using Docker Compose
 
 ## Project Structure
 
@@ -67,6 +81,7 @@ Validation
 .
 ├── dags/
 ├── src/
+├── tests/
 ├── data/
 ├── temp/
 ├── logs/
@@ -74,7 +89,9 @@ Validation
 ├── plugins/
 ├── sql/
 ├── docker-compose.yml
+├── Dockerfile
 ├── requirements.txt
+├── pytest.ini
 └── README.md
 ```
 
@@ -88,6 +105,9 @@ Extract
 Transform
    │
    │ (XCom)
+   ▼
+Quality Check
+   │
    ▼
 Load
    │
@@ -106,6 +126,19 @@ Validate
 - PostgreSQL (Airflow Metadata Database)
 - PostgreSQL (ETL Database)
 
+## Testing
+
+Unit tests are implemented using Pytest.
+
+Current test coverage includes:
+
+- Extract module
+- Transform module
+
+Run all tests:
+
+`docker compose exec airflow-apiserver pytest -v`
+
 ## Learning Outcomes
 
 - ETL Pipeline Design
@@ -118,13 +151,17 @@ Validate
 - Incremental ETL
 - PostgreSQL `ON CONFLICT`
 - Data Quality Validation
+- Production Logging
+- Discord Webhook Integration
+- Unit Testing with Pytest
 - Docker Compose Multi-Container Architecture
 - Workflow Orchestration
 
 ## Future Improvements
 
-- Incremental ETL with `ON CONFLICT DO UPDATE`
-- Data Quality Rules
+- Increase Unit Test Coverage
+- GitHub Actions CI/CD
+- Airflow Connections & Variables
 - AWS S3 / MinIO Integration
 - dbt for Data Transformation
 - Spark / PySpark Integration
