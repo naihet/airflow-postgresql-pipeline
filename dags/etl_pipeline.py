@@ -11,7 +11,10 @@ from load import load_data
 from validate import validate_data
 from quality import quality_check
 from logger import logger
-from notifier import send_discord
+from callbacks import (
+    task_failure_alert,
+    dag_success_alert,
+)
 
 def extract(ti):
 
@@ -120,31 +123,37 @@ with DAG(
     schedule="@daily",
     catchup=False,
     tags=["etl", "sales"],
+    on_success_callback=dag_success_alert,
 ) as dag:
 
     extract_task = PythonOperator(
         task_id="extract",
-        python_callable=extract
+        python_callable=extract,
+        on_failure_callback=task_failure_alert
     )
 
     transform_task = PythonOperator(
         task_id="transform",
-        python_callable=transform
+        python_callable=transform,
+        on_failure_callback=task_failure_alert
     )
 
     quality_task = PythonOperator(
-    task_id="quality",
-    python_callable=quality
+        task_id="quality",
+        python_callable=quality,
+        on_failure_callback=task_failure_alert
     )
 
     load_task = PythonOperator(
         task_id="load",
-        python_callable=load
+        python_callable=load,
+        on_failure_callback=task_failure_alert
     )
 
     validate_task = PythonOperator(
         task_id="validate",
-        python_callable=validate
+        python_callable=validate,
+        on_failure_callback=task_failure_alert
     )
 
     extract_task >> transform_task >> quality_task >> load_task >> validate_task
