@@ -1,4 +1,4 @@
-from notifier import send_discord
+from src.notifier import send_discord
 import pendulum
 
 def task_failure_alert(context):

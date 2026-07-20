@@ -11,7 +11,7 @@ from src.load import load_data
 from src.validate import validate_data
 from src.quality import quality_check
 from src.logger import logger
-from callbacks import (
+from src.callbacks import (
     task_failure_alert,
     dag_success_alert,
 )
