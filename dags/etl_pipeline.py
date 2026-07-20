@@ -11,6 +11,9 @@ from load import load_data
 from validate import validate_data
 from quality import quality_check
 from logger import logger
+from notifier import send_discord
+
+send_discord("Hello from etl pipeline")
 
 def extract(ti):
 
