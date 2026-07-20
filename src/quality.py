@@ -1,6 +1,8 @@
 import pandas as pd
 from sqlalchemy import create_engine
 from datetime import datetime
+from notifier import send_discord
+from logger import logger
 
 engine = create_engine(
     "postgresql://postgres:postgres@postgres-etl:5432/salesdb"
@@ -26,7 +28,7 @@ def quality_check(input_path):
     # -----------------------------
 
     status = "PASS"
-
+    # report["duplicates"] = 5 # <<<<<<<<<   Fail test
     if (
         report["missing"] > 0
         or report["duplicates"] > 0
@@ -66,8 +68,27 @@ def quality_check(input_path):
     # -----------------------------
 
     if status == "FAIL":
-        raise ValueError("Data Quality Failed")
 
-    print("Data Quality Passed")
+        send_discord(
+            f"""Data Quality Failed
+
+    Missing: {report['missing']}
+    Duplicates: {report['duplicates']}
+    Negative Sales: {report['negative_sales']}
+    Invalid Quantity: {report['invalid_quantity']}
+    """
+        )
+
+        raise ValueError("❌ Data Quality Failed")
+
+    logger.info("Data Quality Passed")
+    send_discord(
+        f"""✅ ETL Pipeline Success
+
+Rows : {report['rows']}
+
+Status : PASS
+"""
+    )
 
     return report

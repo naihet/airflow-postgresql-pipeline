@@ -13,8 +13,6 @@ from quality import quality_check
 from logger import logger
 from notifier import send_discord
 
-send_discord("Hello from etl pipeline")
-
 def extract(ti):
 
     logger.info("Extract task started")
