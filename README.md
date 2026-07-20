@@ -17,7 +17,7 @@ A Data Engineering project demonstrating a production-style ETL pipeline orchest
 ## Project Architecture
 
 ```text
- +----------------+
+                    +----------------+
                     |  CSV Dataset   |
                     +----------------+
                              │
