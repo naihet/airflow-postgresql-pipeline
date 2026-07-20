@@ -2,7 +2,7 @@ import pandas as pd
 
 from sqlalchemy import create_engine
 from sqlalchemy import text
-from logger import logger
+from src.logger import logger
 
 engine = create_engine(
     "postgresql://postgres:postgres@postgres-etl:5432/salesdb"

@@ -3,14 +3,14 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 import sys
 
-sys.path.append("/opt/airflow/src")
+sys.path.append("/opt/airflow")
 
-from extract import extract_data
-from transform import transform_data
-from load import load_data
-from validate import validate_data
-from quality import quality_check
-from logger import logger
+from src.extract import extract_data
+from src.transform import transform_data
+from src.load import load_data
+from src.validate import validate_data
+from src.quality import quality_check
+from src.logger import logger
 from callbacks import (
     task_failure_alert,
     dag_success_alert,
