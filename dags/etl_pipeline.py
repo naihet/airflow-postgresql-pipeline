@@ -10,8 +10,11 @@ from transform import transform_data
 from load import load_data
 from validate import validate_data
 from quality import quality_check
+from logger import logger
 
 def extract(ti):
+
+    logger.info("Extract task started")
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
@@ -27,9 +30,11 @@ def extract(ti):
         value=raw_path
     )
 
-    print("Extract completed")
+    logger.info("Extract task finished")
 
 def transform(ti):
+
+    logger.info("Transform task started")
 
     raw_path = ti.xcom_pull(
         task_ids="extract",
@@ -51,9 +56,11 @@ def transform(ti):
         value=clean_path
     )
 
-    print("Transform completed")
+    logger.info("Transform task finished")
 
 def quality(ti):
+
+    logger.info("Quality task started")
 
     clean_path = ti.xcom_pull(
         task_ids="transform",
@@ -62,11 +69,21 @@ def quality(ti):
 
     report = quality_check(clean_path)
 
-    print(report)
+    logger.info("=" * 40)
 
-    print("Quality completed")
+    logger.info("DATA QUALITY REPORT")
+
+    for key, value in report.items():
+
+        logger.info(f"{key}: {value}")
+
+    logger.info("=" * 40)
+
+    logger.info("Quality task finished")
 
 def load(ti):
+
+    logger.info("Load task started")
 
     clean_path = ti.xcom_pull(
         task_ids="transform",
@@ -77,9 +94,11 @@ def load(ti):
         clean_path
     )
 
-    print("Load completed")
+    logger.info("Load task finished")
 
 def validate(ti):
+
+    logger.info("Validate task started")
 
     clean_path = ti.xcom_pull(
         task_ids="transform",
@@ -90,7 +109,9 @@ def validate(ti):
         clean_path
     )
 
-    print(report)
+    logger.info(report)
+
+    logger.info("Validate task finished")
 
 with DAG(
     dag_id="sales_etl_pipeline",

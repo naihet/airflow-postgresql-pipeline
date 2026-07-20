@@ -1,5 +1,5 @@
 import pandas as pd
-
+from logger import logger
 
 def validate_data(input_path):
 

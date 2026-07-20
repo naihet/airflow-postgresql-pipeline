@@ -2,6 +2,7 @@ import pandas as pd
 
 from sqlalchemy import create_engine
 from sqlalchemy import text
+from logger import logger
 
 engine = create_engine(
     "postgresql://postgres:postgres@postgres-etl:5432/salesdb"
@@ -9,6 +10,8 @@ engine = create_engine(
 
 
 def load_data(input_path):
+
+    logger.info("Loading data into PostgreSQL")
 
     df = pd.read_parquet(input_path)
 
@@ -34,3 +37,5 @@ def load_data(input_path):
                 profit = EXCLUDED.profit;
             """)
         )
+
+    logger.info(f"Loaded {len(df)} rows")

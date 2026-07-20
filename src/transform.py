@@ -1,7 +1,9 @@
 import pandas as pd
-
+from logger import logger
 
 def transform_data(input_path, output_path):
+
+    logger.info("Reading raw parquet")
 
     df = pd.read_parquet(input_path)
 
@@ -20,4 +22,6 @@ def transform_data(input_path, output_path):
         index=False
     )
 
+    logger.info("Column names standardized")
+    
     return output_path
