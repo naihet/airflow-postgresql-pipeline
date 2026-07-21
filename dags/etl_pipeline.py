@@ -15,6 +15,9 @@ from src.callbacks import (
     task_failure_alert,
     dag_success_alert,
 )
+from airflow.models import Variable
+
+CSV_PATH = Variable.get("CSV_PATH")
 
 def extract(ti):
 
@@ -25,7 +28,7 @@ def extract(ti):
     raw_path = f"/opt/airflow/temp/raw_{timestamp}.parquet"
 
     extract_data(
-        "/opt/airflow/data/Sample - Superstore.csv",
+        CSV_PATH,
         raw_path
     )
 
