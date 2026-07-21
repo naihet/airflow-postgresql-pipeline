@@ -3,11 +3,21 @@ import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy import text
 from src.logger import logger
+from airflow.hooks.base import BaseHook
+from sqlalchemy import create_engine
 
-engine = create_engine(
-    "postgresql://postgres:postgres@postgres-etl:5432/salesdb"
-)
+def get_engine():
 
+    conn = BaseHook.get_connection("sales_db")
+
+    engine = create_engine(
+
+        f"postgresql://{conn.login}:{conn.password}"
+        f"@{conn.host}:{conn.port}/{conn.schema}"
+
+    )
+
+    return engine
 
 def load_data(input_path):
 
@@ -15,6 +25,8 @@ def load_data(input_path):
 
     df = pd.read_parquet(input_path)
 
+    engine = get_engine()
+    
     df.to_sql(
         "sales_staging",
         engine,
