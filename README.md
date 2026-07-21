@@ -1,5 +1,7 @@
 # Airflow ETL Pipeline with PostgreSQL
 
+[![Python Tests](https://github.com/naihet/airflow-postgresql-pipeline/actions/workflows/python-tests.yml/badge.svg)](https://github.com/naihet/airflow-postgresql-pipeline/actions/workflows/python-tests.yml)
+
 A Data Engineering project demonstrating a production-style ETL pipeline orchestrated by Apache Airflow. The pipeline extracts sales data from CSV, transforms it with Pandas, stores intermediate data as Parquet, loads data into PostgreSQL through a staging table, performs incremental loading using PostgreSQL `ON CONFLICT`, and validates data quality.
 
 ## Tech Stack
