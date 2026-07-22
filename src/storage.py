@@ -17,3 +17,13 @@ def upload_file(local_path, bucket_name, object_name):
     )
 
     print(f"Uploaded {object_name} to {bucket_name}")
+
+def download_file(bucket_name, object_name, local_path):
+
+    client.download_file(
+        bucket_name,
+        object_name,
+        local_path
+    )
+
+    print(f"Downloaded {object_name}")

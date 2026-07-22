@@ -16,7 +16,7 @@ from src.callbacks import (
     dag_success_alert,
 )
 from airflow.models import Variable
-from src.storage import upload_file
+from src.storage import upload_file, download_file
 
 CSV_PATH = Variable.get("CSV_PATH")
 
@@ -29,6 +29,16 @@ def upload():
     )
 
     print("Upload completed")
+
+def download():
+
+    download_file(
+        "sales-data",
+        "Sample - Superstore.csv",
+        "/opt/airflow/temp/Sample - Superstore.csv"
+    )
+
+    print("Download completed")
 
 def extract(ti):
 
@@ -145,6 +155,11 @@ with DAG(
         python_callable=upload
     )
 
+    download_task = PythonOperator(
+        task_id="download",
+        python_callable=download
+    )
+
     extract_task = PythonOperator(
         task_id="extract",
         python_callable=extract,
@@ -175,4 +190,4 @@ with DAG(
         on_failure_callback=task_failure_alert
     )
 
-    upload_task >> extract_task >> transform_task >> quality_task >> load_task >> validate_task
+    upload_task >> download_task >> extract_task >> transform_task >> quality_task >> load_task >> validate_task
