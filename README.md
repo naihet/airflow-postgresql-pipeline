@@ -2,7 +2,9 @@
 
 [![Python Tests](https://github.com/naihet/airflow-postgresql-pipeline/actions/workflows/python-tests.yml/badge.svg)](https://github.com/naihet/airflow-postgresql-pipeline/actions/workflows/python-tests.yml)
 
-A Data Engineering project demonstrating a production-style ETL pipeline orchestrated by Apache Airflow. The pipeline extracts sales data from CSV, transforms it with Pandas, stores intermediate data as Parquet, loads data into PostgreSQL through a staging table, performs incremental loading using PostgreSQL `ON CONFLICT`, and validates data quality.
+A production-style Data Engineering project demonstrating an end-to-end ETL pipeline orchestrated by Apache Airflow. The pipeline uploads source data to MinIO (S3-compatible object storage), downloads it for processing, transforms data with Pandas, performs data quality validation, incrementally loads records into PostgreSQL, and sends Discord notifications for both success and failure events.
+
+---
 
 ## Tech Stack
 
@@ -11,71 +13,87 @@ A Data Engineering project demonstrating a production-style ETL pipeline orchest
 - PostgreSQL
 - SQLAlchemy
 - Apache Airflow
+- MinIO (S3 Compatible Object Storage)
 - Docker
 - Docker Compose
+- GitHub Actions
 - Pytest
 - Discord Webhook
+
+---
 
 ## Project Architecture
 
 ```text
                     +----------------+
-                    |  CSV Dataset   |
+                    |   CSV Dataset  |
                     +----------------+
+                             │
+                             ▼
+                   Upload to MinIO (S3)
+                             │
+                             ▼
+                   Download from MinIO
                              │
                              ▼
                       Extract (CSV)
                              │
                              ▼
-                      raw.parquet
+                    raw.parquet (Temp)
                              │
                              ▼
-                     Transform Data
+                    Transform Data
                              │
                              ▼
-                     clean.parquet
+                   clean.parquet (Temp)
                              │
                              ▼
-                    Data Quality Check
+                  Data Quality Validation
                              │
-                     PASS / FAIL
-                             │
-             ┌───────────────┴───────────────┐
-             │                               │
-             ▼                               ▼
-      Discord Alert                    Stop Pipeline
-             │
-             ▼
-       PostgreSQL Staging
-             │
-             ▼
- Incremental Load (ON CONFLICT)
-             │
-             ▼
-        PostgreSQL Sales DB
-             │
-             ▼
-        Validation Report
-             │
-             ▼
-      Discord Success Alert
+                   PASS              FAIL
+                     │                │
+                     ▼                ▼
+             PostgreSQL Staging   Discord Alert
+                     │
+                     ▼
+      Incremental Load (ON CONFLICT)
+                     │
+                     ▼
+             PostgreSQL Sales DB
+                     │
+                     ▼
+             Validation Report
+                     │
+                     ▼
+          Cleanup Temporary Files
+                     │
+                     ▼
+         Discord Success Notification
 ```
+
+---
 
 ## Features
 
+- Upload source files to MinIO (S3-compatible storage)
+- Download datasets from MinIO before processing
 - Extract sales data from CSV
 - Transform data using Pandas
 - Store intermediate datasets as Parquet
 - Dynamic file paths using Airflow XCom
 - Data Quality validation
 - Production-style logging
-- Incremental loading using PostgreSQL ON CONFLICT
+- Cleanup temporary files after successful execution
+- Incremental loading using PostgreSQL `ON CONFLICT`
 - Staging table architecture
 - Prevent duplicate records using Primary Key
 - Discord notifications for pipeline success and failure
 - Unit testing with Pytest
+- GitHub Actions Continuous Integration
 - Apache Airflow DAG orchestration
 - Containerized development environment using Docker Compose
+
+---
 
 ## Project Structure
 
@@ -90,6 +108,8 @@ A Data Engineering project demonstrating a production-style ETL pipeline orchest
 ├── config/
 ├── plugins/
 ├── sql/
+├── .github/
+│   └── workflows/
 ├── docker-compose.yml
 ├── Dockerfile
 ├── requirements.txt
@@ -97,9 +117,18 @@ A Data Engineering project demonstrating a production-style ETL pipeline orchest
 └── README.md
 ```
 
+---
+
 ## Airflow Workflow
 
 ```text
+Upload
+   │
+   ▼
+Download
+   │
+   │ (XCom)
+   ▼
 Extract
    │
    │ (XCom)
@@ -115,7 +144,12 @@ Load
    │
    ▼
 Validate
+   │
+   ▼
+Cleanup
 ```
+
+---
 
 ## Docker Services
 
@@ -127,6 +161,9 @@ Validate
 - Redis
 - PostgreSQL (Airflow Metadata Database)
 - PostgreSQL (ETL Database)
+- MinIO (Object Storage)
+
+---
 
 ## Testing
 
@@ -139,7 +176,23 @@ Current test coverage includes:
 
 Run all tests:
 
-`docker compose exec airflow-apiserver pytest -v`
+```bash
+docker compose exec airflow-apiserver pytest -v
+```
+
+---
+
+## CI
+
+GitHub Actions automatically executes unit tests on every push and pull request.
+
+Current workflow:
+
+- Install dependencies
+- Run Pytest
+- Report build status
+
+---
 
 ## Learning Outcomes
 
@@ -152,19 +205,23 @@ Run all tests:
 - Staging Table Design
 - Incremental ETL
 - PostgreSQL `ON CONFLICT`
+- Object Storage (MinIO / S3)
 - Data Quality Validation
 - Production Logging
 - Discord Webhook Integration
 - Unit Testing with Pytest
+- GitHub Actions CI
 - Docker Compose Multi-Container Architecture
 - Workflow Orchestration
+
+---
 
 ## Future Improvements
 
 - Increase Unit Test Coverage
-- GitHub Actions CI/CD
 - Airflow Connections & Variables
-- AWS S3 / MinIO Integration
+- AWS S3 Migration
 - dbt for Data Transformation
 - Spark / PySpark Integration
-- Monitoring and Alerting
+- Data Lineage
+- Monitoring Dashboard (Prometheus + Grafana)
