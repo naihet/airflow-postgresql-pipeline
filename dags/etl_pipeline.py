@@ -17,8 +17,9 @@ from src.callbacks import (
 )
 from airflow.models import Variable
 from src.storage import upload_file, download_file
+from src.cleanup import cleanup_files
 
-CSV_PATH = Variable.get("CSV_PATH")
+#CSV_PATH = Variable.get("CSV_PATH") # NO use anymore
 
 def upload():
 
@@ -28,17 +29,26 @@ def upload():
         "Sample - Superstore.csv"
     )
 
-    print("Upload completed")
+    logger.info("Upload completed")
 
-def download():
+def download(ti):
+
+    logger.info("Download task started")
+
+    download_path = "/opt/airflow/temp/Sample - Superstore.csv"
 
     download_file(
         "sales-data",
         "Sample - Superstore.csv",
-        "/opt/airflow/temp/Sample - Superstore.csv"
+        download_path
     )
 
-    print("Download completed")
+    ti.xcom_push(
+        key="download_path",
+        value=download_path
+    )
+
+    logger.info("Download task finished")
 
 def extract(ti):
 
@@ -48,8 +58,13 @@ def extract(ti):
 
     raw_path = f"/opt/airflow/temp/raw_{timestamp}.parquet"
 
+    csv_path = ti.xcom_pull(
+        task_ids="download",
+        key="download_path"
+    )
+
     extract_data(
-        CSV_PATH,
+        csv_path,
         raw_path
     )
 
@@ -141,6 +156,33 @@ def validate(ti):
 
     logger.info("Validate task finished")
 
+def cleanup(ti):
+
+    csv_path = ti.xcom_pull(
+        task_ids="download",
+        key="download_path"
+    )
+
+    raw_path = ti.xcom_pull(
+        task_ids="extract",
+        key="raw_path"
+    )
+
+    clean_path = ti.xcom_pull(
+        task_ids="transform",
+        key="clean_path"
+    )
+
+    cleanup_files([
+        csv_path,
+        raw_path,
+        clean_path
+    ])
+
+    logger.info("Cleanup completed")
+
+#======================================
+
 with DAG(
     dag_id="sales_etl_pipeline",
     start_date=datetime(2026, 1, 1),
@@ -190,4 +232,9 @@ with DAG(
         on_failure_callback=task_failure_alert
     )
 
-    upload_task >> download_task >> extract_task >> transform_task >> quality_task >> load_task >> validate_task
+    cleanup_task = PythonOperator(
+        task_id="cleanup",
+        python_callable=cleanup
+    )
+
+    upload_task >> download_task >> extract_task >> transform_task >> quality_task >> load_task >> validate_task >> cleanup_task
